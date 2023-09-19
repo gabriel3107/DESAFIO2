@@ -1,5 +1,5 @@
+const { error } = require('console');
 const fs = require('fs');
-
 
 class ProductManager {
 
@@ -43,7 +43,7 @@ class ProductManager {
     };
 
 
-    getProductById = (id) => {
+    getProductById = async (id) => {
 
         const data = fs.promises.readFile('productos.json');
         const product = JSON.parse(data); 
@@ -59,8 +59,32 @@ class ProductManager {
         return productById;
     };
 
-    deleteproduct =(id) => {
+    deleteProduct = async (id) => {
+        try {
+            let products = await this.getProduct();
+            const index = products.findIndex(product => product.id === id);
+    
+            if (index !== -1) {
+                products.splice(index, 1);
+                await fs.writeFile(this.path, JSON.stringify(products, null, '\t'));
+                console.log('Producto eliminado correctamente.');
+            } else {
+                console.log('Producto no encontrado.');
+            }
+        } catch (error) {
+            console.error('Error al eliminar el producto:', error);
+        }
+    };
 
+    updateProduct = async (id,updateprod) => {
+        const productindex = this.products.findIndex((product) => product.id === id)
+        if (productindex === -1){
+            throw new error("producto no encontrado para actualizar")
+        }
+        const updateProduct= {...this.product[productindex], ...updateprod};
+        this.products[productindex] = updateProduct;
+
+        return updateProduct
     }
 
 }
