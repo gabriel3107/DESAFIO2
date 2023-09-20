@@ -48,15 +48,15 @@ class ProductManager {
         const data = fs.promises.readFile('productos.json');
         const product = JSON.parse(data); 
 
-        const productencontrado = this.producto.find(product => product.id === id);
+        const productencontrado = this.product.find(product => product.id === id);
 
-        if (productById) {
+        if (productencontrado) {
             console.log('producto encontrado : ', product)
             
         }else{
             console.log('producto no encontrado');
         }
-        return productById;
+        return productencontrado;
     };
 
     deleteProduct = async (id) => {
@@ -66,7 +66,7 @@ class ProductManager {
     
             if (index !== -1) {
                 products.splice(index, 1);
-                await fs.writeFile(this.path, JSON.stringify(products, null, '\t'));
+                await fs.promises.writeFile(this.path, JSON.stringify(products, null, '\t'));
                 console.log('Producto eliminado correctamente.');
             } else {
                 console.log('Producto no encontrado.');
@@ -76,15 +76,38 @@ class ProductManager {
         }
     };
 
-    updateProduct = async (id,updateprod) => {
-        const productindex = this.products.findIndex((product) => product.id === id)
-        if (productindex === -1){
-            throw new error("producto no encontrado para actualizar")
-        }
-        const updateProduct= {...this.product[productindex], ...updateprod};
-        this.products[productindex] = updateProduct;
+    // updateProduct = async (id,updateprod) => {
+    //     const products = await this.getProduct();
+    //     const productindex = this.products.findIndex((product) => product.id === id)
+    //     if (productindex === -1){
+    //         throw new error("producto no encontrado para actualizar")
+    //     }
+    //     const updateProduct= {...this.product[productindex], ...updateprod};
+    //     this.products[productindex] = updateProduct;
+    //     await fs.promises.writeFile(this.path, JSON.stringify(products, null, '\t'));
 
-        return updateProduct
+    //     return updateProduct
+    // }
+
+    updateProduct = async (id,updateprod) => {
+        try {
+            const products = await this.getProduct();
+            const productIndex = products.findIndex((product) => product.id === id);
+
+            if (productIndex === -1) {
+                throw new Error("Producto no encontrado para actualizar");
+            }
+
+            const updatedProduct = { ...products[productIndex], ...updateprod };
+            products[productIndex] = updatedProduct;
+
+            await fs.promises.writeFile(this.path, JSON.stringify(products, null, '\t'));
+
+            return updatedProduct;
+        } catch (error) {
+            console.error('Error al actualizar el producto:', error);
+            throw error; 
+        }
     }
 
 }
